@@ -9,19 +9,17 @@ class Picture < ActiveRecord::Base
   has_reputation :votes, :source => :user, :aggregated_by => :sum
   
   def save_image(image)
-    imgur = Imgur::API.new('dc3a429ef78358381910d28657f4b301')
-    # Should return a hash like this
-    # {     
-    #       "small_thumbnail"=>"http://imgur.com/NfuKFs.png", 
-    #       "original_image"=>"http://imgur.com/NfuKF.png", 
-    #       "large_thumbnail"=>"http://imgur.com/NfuKFl.png", 
-    #       "delete_hash"=>"VAiPkk5NoQ", "imgur_page"=>"http://imgur.com/NfuKF", 
-    #       "delete_page"=>"http://imgur.com/delete/VAiPkk5NoQ", 
-    #       "image_hash"=>"NfuKF"
-    # }
+    credentials = Picture.get_imgur_credentials
+    imgur_session = Imgurapi::Session.new(
+      client_id: credentials["client_id"],
+      client_secret: credentials["client_secret"],
+      access_token: credentials["access_token"],
+      refresh_token: credentials["refresh_token"]
+    )
+
     begin
-      uploaded_img = imgur.upload_file image.tempfile.path
-      self.image_url = uploaded_img["original_image"]
+      uploaded_img = imgur_session.image.image_upload(image.tempfile.path)
+      self.image_url = uploaded_img.link
     rescue StandardError => error
       logger.warn "@ ======================== @"
       logger.warn "@ Error uploading image... @"
@@ -60,5 +58,14 @@ class Picture < ActiveRecord::Base
       ]
     }
     super(default_options.merge(options))
+  end
+
+  # Expects imgur_credentials.json file in app/assets/credentials containing API keys.
+  def self.get_imgur_credentials
+    credentials_filename = 'imgur_credentials.json'
+    path = Rails.root.join('app/assets/credentials', credentials_filename)
+    credentials = File.read(path)
+    imgur_credentials_hash = JSON.parse(credentials)
+    return imgur_credentials_hash
   end
 end

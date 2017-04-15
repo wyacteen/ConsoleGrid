@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'rails', '3.2.11'
+gem 'rails', '3.2.22.5'
 
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
@@ -31,9 +31,11 @@ gem 'jquery-rails'
 # Authentication
 gem 'devise'
 # Voting
-gem 'activerecord-reputation-system', :require => 'reputation_system'
+gem 'activerecord-reputation-system', '~> 2.0.2',  :require => 'reputation_system'
+
 # Imgur uploads
-gem 'imgur'
+gem 'imgurapi'
+
 # Sunspot (for searching)
 gem 'sunspot_rails'
 gem 'sunspot_solr'
